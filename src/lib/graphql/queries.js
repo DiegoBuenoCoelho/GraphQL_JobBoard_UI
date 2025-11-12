@@ -38,7 +38,7 @@ export const getJob = async (jobId) => {
     return job;
 };
 
-export const getCpmpany = async (companyId) => {
+export const getCompany = async (companyId) => {
     const query = gql`
         query CompanyById($id: ID!) {
             company(id: $id) {
@@ -58,4 +58,20 @@ export const getCpmpany = async (companyId) => {
 
     const { company } = await client.request(query, { id: companyId });
     return company;
+};
+
+export const createJob = async ({ title, description }) => {
+    // we are going to use job as an alias for this createjob mutation
+    const mutation = gql`
+        mutation CreateJob($input: CreateJobInput!) {
+            job: createJob(input: $input) {
+                id
+            }
+        }
+    `;
+    const jobCreated = await client.request(mutation, {
+        input: { title, description },
+    });
+    const { job } = jobCreated;
+    return job;
 };

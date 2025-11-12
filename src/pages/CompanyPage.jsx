@@ -1,6 +1,6 @@
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
-import { getCpmpany } from "../lib/graphql/queries";
+import { getCompany } from "../lib/graphql/queries";
 import JobList from "../components/JobList";
 
 function CompanyPage() {
@@ -8,7 +8,7 @@ function CompanyPage() {
     const [company, setCompany] = useState();
 
     useEffect(() => {
-        getCpmpany(companyId).then((data) => {
+        getCompany(companyId).then((data) => {
             setCompany(data);
         });
     }, [companyId]);
