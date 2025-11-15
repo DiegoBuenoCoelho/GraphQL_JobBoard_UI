@@ -17,7 +17,7 @@ function JobPage() {
             if (!!jobId) {
                 try {
                     const jobTemp = await getJob(jobId);
-                    console.warn({ jobTemp });
+                    // console.warn({ jobTemp });
                     setState({ job: jobTemp, error: null, loading: false });
                 } catch (error) {
                     console.error(JSON.stringify(error, null, 2));
