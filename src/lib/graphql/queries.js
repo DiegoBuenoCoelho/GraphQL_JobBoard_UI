@@ -25,7 +25,31 @@ const myAuthCustomLink = new ApolloLink((operation, forward) => {
 const apolloClient = new ApolloClient({
     link: ApolloLink.from([myAuthCustomLink, httpLink]),
     cache: new InMemoryCache(),
+    // defaultOptions: {
+    //     query: {
+    //         fetchPolicy: "network-only", // If we want ALL the queries to always execute
+    //     },
+    //     watchQuery: {
+    //         fetchPolicy: "network-only", // If we want ALL the hooks to always execute
+    //     },
+    // },
 });
+
+//-------------------------------------------------------------------------------
+const queryGetJobById = gql`
+    query JobById($id: ID!) {
+        job(id: $id) {
+            id
+            title
+            description
+            date
+            company {
+                id
+                name
+            }
+        }
+    }
+`;
 
 //-------------------------------------------------------------------------------
 
@@ -41,30 +65,18 @@ export const getJobs = async () => {
         }
     `;
 
-    const { data } = await apolloClient.query({ query });
+    const { data } = await apolloClient.query({
+        query,
+        // fetchPolicy: "network-only", //only from the server
+    });
     return data?.jobs;
 };
 
 export const getJob = async (jobId) => {
-    const query = gql`
-        query JobById($id: ID!) {
-            job(id: $id) {
-                id
-                title
-                description
-                date
-                company {
-                    id
-                    name
-                }
-            }
-        }
-    `;
-
-    // const { job } = await client.request(query, { id: jobId });
     const { data } = await apolloClient.query({
-        query,
+        query: queryGetJobById,
         variables: { id: jobId },
+        fetchPolicy: "cache-first",
     });
     return data?.job;
 };
@@ -115,6 +127,15 @@ export const createJob = async ({ title, description }) => {
         //         Authentication: `Bearer ${getAccessToken()}`,
         //     },
         // },
+        update: (cache, { data }) => {
+            // const { title, description } = data;
+            console.log("[createJob] mutation writeQuery: ", { data });
+            cache.writeQuery({
+                query: queryGetJobById,
+                data: data,
+                variables: { id: data.job.id },
+            });
+        },
     });
     return data.job;
 };
