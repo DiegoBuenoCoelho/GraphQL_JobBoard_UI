@@ -68,43 +68,18 @@ export const queryGetCompanyById = gql`
     }
 `;
 
-//-------------------------------------------------------------------------------
-
-export const getJobs = async () => {
-    const query = gql`
-        query Jobs {
-            jobs {
-                id
-                title
-                description
-                date
-            }
+export const queryGetJobs = gql`
+    query Jobs {
+        jobs {
+            id
+            title
+            description
+            date
         }
-    `;
+    }
+`;
 
-    const { data } = await apolloClient.query({
-        query,
-        // fetchPolicy: "network-only", //only from the server
-    });
-    return data?.jobs;
-};
-
-export const getJob = async (jobId) => {
-    const { data } = await apolloClient.query({
-        query: queryGetJobById,
-        variables: { id: jobId },
-        fetchPolicy: "cache-first",
-    });
-    return data?.job;
-};
-
-export const getCompany = async (companyId) => {
-    const { data } = await apolloClient.query({
-        query: queryGetCompanyById,
-        variables: { id: companyId },
-    });
-    return data?.company;
-};
+//-------------------------------------------------------------------------------
 
 export const createJob = async ({ title, description }) => {
     // we are going to use job as an alias for this createjob mutation
