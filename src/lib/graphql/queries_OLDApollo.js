@@ -25,6 +25,14 @@ const myAuthCustomLink = new ApolloLink((operation, forward) => {
 export const apolloClient = new ApolloClient({
     link: ApolloLink.from([myAuthCustomLink, httpLink]),
     cache: new InMemoryCache(),
+    // defaultOptions: {
+    //     query: {
+    //         fetchPolicy: "network-only", // If we want ALL the queries to always execute
+    //     },
+    //     watchQuery: {
+    //         fetchPolicy: "network-only", // If we want ALL the hooks to always execute
+    //     },
+    // },
 });
 
 //-------------------------------------------------------------------------------
@@ -42,30 +50,13 @@ const fragJobDetails = gql`
     }
 `;
 
-export const queryGetJobById = gql`
+const queryGetJobById = gql`
     query JobById($id: ID!) {
         job(id: $id) {
             ...fragJobDetails
         }
     }
     ${fragJobDetails}
-`;
-
-export const queryGetCompanyById = gql`
-    query CompanyById($id: ID!) {
-        company(id: $id) {
-            id
-            name
-            description
-            president
-            jobs {
-                id
-                title
-                date
-                description
-            }
-        }
-    }
 `;
 
 //-------------------------------------------------------------------------------
@@ -99,8 +90,25 @@ export const getJob = async (jobId) => {
 };
 
 export const getCompany = async (companyId) => {
+    const query = gql`
+        query CompanyById($id: ID!) {
+            company(id: $id) {
+                id
+                name
+                description
+                president
+                jobs {
+                    id
+                    title
+                    date
+                    description
+                }
+            }
+        }
+    `;
+
     const { data } = await apolloClient.query({
-        query: queryGetCompanyById,
+        query,
         variables: { id: companyId },
     });
     return data?.company;
