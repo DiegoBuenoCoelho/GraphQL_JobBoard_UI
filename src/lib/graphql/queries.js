@@ -25,6 +25,11 @@ const myAuthCustomLink = new ApolloLink((operation, forward) => {
 export const apolloClient = new ApolloClient({
     link: ApolloLink.from([myAuthCustomLink, httpLink]),
     cache: new InMemoryCache(),
+    defaultOptions: {
+        query: {
+            fetchPolicy: "network-only", // If we want ALL the queries to always execute
+        },
+    },
 });
 
 //-------------------------------------------------------------------------------
@@ -79,38 +84,11 @@ export const queryGetJobs = gql`
     }
 `;
 
-//-------------------------------------------------------------------------------
-
-export const createJob = async ({ title, description }) => {
-    // we are going to use job as an alias for this createjob mutation
-    const mutationGQL = gql`
-        mutation CreateJob($input: CreateJobInput!) {
-            job: createJob(input: $input) {
-                ...fragJobDetails
-            }
+export const mutationCreateJob = gql`
+    mutation CreateJob($input: CreateJobInput!) {
+        job: createJob(input: $input) {
+            ...fragJobDetails
         }
-        ${fragJobDetails}
-    `;
-
-    const { data } = await apolloClient.mutate({
-        mutation: mutationGQL,
-        variables: {
-            input: { title, description },
-        },
-        //one way to add the headers for token:
-        // context: {
-        //     headers: {
-        //         Authentication: `Bearer ${getAccessToken()}`,
-        //     },
-        // },
-        update: (cache, { data }) => {
-            console.log("[createJob] mutation writeQuery: ", { data });
-            cache.writeQuery({
-                query: queryGetJobById,
-                variables: { id: data.job.id },
-                data: data,
-            });
-        },
-    });
-    return data.job;
-};
+    }
+    ${fragJobDetails}
+`;
